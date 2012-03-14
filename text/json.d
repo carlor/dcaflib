@@ -66,10 +66,7 @@ string tostring(real data) {
  * Throws: JSONException on any parsing errors.
  */
 JSONType readJSON(string src) {
-	string pointcpy = src;
-	JSONType root = null;
-	root = parseHelper(src);
-	return root;
+	return parseHelper(src);
 }
 
 /// Thrown when attempting an operation on a JSON object.
@@ -557,17 +554,16 @@ string JSONEncode(string src) {
 /// Unescape a JSON string
 /// Returns: A decoded string.
 string JSONDecode(string src) {
-	string tempStr;
-        tempStr = replace(src    , "\\\\", "\\");
-        tempStr = replace(tempStr, "\\\"", "\"");
-        tempStr = replace(tempStr, "\\/", "/");
-        tempStr = replace(tempStr, "\\n", "\n");
-        tempStr = replace(tempStr, "\\r", "\r");
-        tempStr = replace(tempStr, "\\f", "\f");
-        tempStr = replace(tempStr, "\\t", "\t");
-        tempStr = replace(tempStr, "\\b", "\b");
-	    // TODO take care of hex character entities
-        return tempStr;
+    src = replace(src, "\\\\", "\\");
+    src = replace(src, "\\\"", "\"");
+    src = replace(src, "\\/", "/");
+    src = replace(src, "\\n", "\n");
+    src = replace(src, "\\r", "\r");
+    src = replace(src, "\\f", "\f");
+    src = replace(src, "\\t", "\t");
+    src = replace(src, "\\b", "\b");
+    // TODO take care of hex character entities
+    return src;
 }
 
 /// This probably needs documentation.  It looks like it converts a dchar to the necessary length string of chars.
@@ -659,8 +655,4 @@ unittest {
 	writef("Testing opIn_r functionality...\n");
 	assert("realms" in tmp);
 	assert(!("bob" in tmp)); +/
-}
-
-version(JSON_main) {
-	void main(){}
 }

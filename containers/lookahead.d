@@ -42,7 +42,7 @@ private {
  + Param, else an array of Params.
  +/
 public interface Lookahead(Param) {
-    
+
     public:
     static if (isInputRange!Param) {
         alias Param R;
@@ -57,6 +57,13 @@ public interface Lookahead(Param) {
     
     /// Loads in the buffer and gets howmuch of it, or the sentinel. 
     T get(size_t howmuch=0);
+    
+    /// Implements a range.
+    @property T front();    /// same as get(0)
+    @property bool empty(); /// whether the looked range is consumed
+    void popFront();        /// same as consume(1)
+    @property Lookahead!Param save(); /// clones the lookahead
+    T opIndex(size_t n);    /// same as get(n)
     
     /// Creates a new lookahead from the range that gives sentinel on empty.
     static Lookahead!Param create(R range, T sentinel = T.init) {
@@ -81,6 +88,26 @@ public interface Lookahead(Param) {
                     } else {
                         return _sentinel;
                     }
+                }
+                
+                public @property T front() {
+                    return get(0);
+                }
+                
+                public @property bool empty() {
+                    return !_array.length;
+                }
+                
+                public void popFront() {
+                    consume(1);
+                }
+                
+                public @property Lookahead!Param save() {
+                    return Lookahead!(Param).create(_array, _sentinel);
+                }
+                
+                public T opIndex(size_t n) {
+                    return get(n);
                 }
                 
                 private T[] _array;
@@ -125,6 +152,30 @@ public interface Lookahead(Param) {
                         howmuch--;
                     }           
                 }     
+                
+                public @property T front() {
+                    return get(0);
+                }
+                
+                public @property bool empty() {
+                    return !_buffer.length && _range.empty;
+                }
+                
+                public void popFront() {
+                    consume(1);
+                }
+                
+                public @property Lookahead!Param save() {
+                    auto r = new typeof(this)();
+                    r._range = _range;
+                    r._buffer = _buffer;
+                    r._sentinel = _sentinel;
+                    return r;
+                }
+                
+                public T opIndex(size_t n) {
+                    return get(n);
+                }
                 
                 private R _range;
                 private T[] _buffer;
