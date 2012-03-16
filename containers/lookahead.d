@@ -1,3 +1,6 @@
+
+// Written in the D Programming Language
+
 /**
  * lookahead.d contains the Lookahead class, which operates on ranges but is 
  * optimized for slices.

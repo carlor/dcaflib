@@ -1,3 +1,6 @@
+
+// Written in the D Programming Language
+
 /++
  + terminal.d contains functions for styling the terminal. Currently, only 
  + foreground text color on Posix is implemented, though more is planned.

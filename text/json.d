@@ -1,3 +1,6 @@
+
+// Written in the D Programming Language
+
 /**
  * json.d contains functions and classes for reading, parsing, and writing JSON
  * documents. It is adapted from LibDJSON:
