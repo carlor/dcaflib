@@ -1,7 +1,7 @@
 /**
  * json.d contains functions and classes for reading, parsing, and writing JSON
  * documents. It is adapted from LibDJSON:
- *      https://256.makerslocal.org/wiki/index.php/Libdjson
+ *      $(LINK https://256.makerslocal.org/wiki/index.php/Libdjson)
  *
  * Copyright:
  *      (c) 2009 William K. Moore, III 
