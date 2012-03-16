@@ -83,6 +83,13 @@ class JSONException : Exception {
 	}
 }
 
+/// Thrown when enforceType fails.
+class JSONTypeException : JSONException {
+    this(string msg) {
+        super(msg);
+    }
+}
+
 /// This is the interface implemented by all classes that represent JSON objects.
 abstract class JSONType {
 	override abstract string toString();
@@ -247,6 +254,11 @@ class JSONObject:JSONType {
 	/// Allow "in" operator to work as expected for object types without an explicit cast
 	override JSONType*opIn_r(string key) {
 		return key in _children;
+	}
+	
+	/// Removes field from object.
+	bool remove(string key) {
+	    return _children.remove(key);
 	}
 }
 
@@ -540,6 +552,32 @@ private JSONType parseHelper(ref string source) {
 	}
 	ret.parse(source);
 	return ret;
+}
+
+/// Converts a JSONType into an expected type.
+/// Throws: a JSONTypeException when val is not of that type.
+T enforceType(T : JSONType)(JSONType val) {
+    T r = cast(T)val;
+    if (r is null) {
+        throw new JSONTypeException("JSON value of type "~
+                                    T.stringof~" expected; received value "~
+                                    val.toString()~" instead");
+                                    
+    } else {
+        return r;
+    }
+}
+
+unittest {
+    auto str = new JSONString("test");
+    assert(enforceType!JSONString(str) is str);
+    JSONString jstr = enforceType!JSONString(str);
+    try {
+        enforceType!JSONObject(str);
+        assert(0);
+    } catch (JSONTypeException jte) {
+    
+    }
 }
 
 /// Perform JSON escapes on a string
