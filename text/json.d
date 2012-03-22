@@ -48,6 +48,8 @@ import std.conv;
 import std.string;
 import std.utf;
 
+import dcaflib.containers.lookahead;
+
 version (unittest) import std.stdio;
 
 

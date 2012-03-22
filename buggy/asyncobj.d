@@ -19,35 +19,35 @@ AsynchronousObject!T spawnAsynchronousObject(T, A...)(A arguments)
 struct AsynchronousObject(T) if (isObject!T) {
     
     void opDispatch(string name, A...)(A args) {
-        static if (true) {
-            struct Caller {
-                void call(T o, Variant va) {
-                    A a = va.peek!(A);
-                    mixin("o."~name~"(a);");
-                }
-            }
-            Variant f = Caller();
-            Variant a = args;
-            send(tid, f, a);
-        } else static assert(0, "asyncobj doesn't work with non-void yet");
+        auto msg = Msg!T(false, (T o) { mixin("o."~name~"(args);"); });
+        send(tid, msg);
     }
     
     private Tid tid;
 }
 
 void stop(T)(AsynchronousObject!T aso) {
-    send(aso.tid, false);
+    send(aso.tid, Msg!T(true, (T o) {}));
 }
 
 private:
+
+struct Msg(T) {
+    bool stop;
+    void delegate(T) func;
+}
+
 void objThread(T, A...)(A args) if (isObject!T) {
     T obj = new T(args);
     bool cont = true;
     while(cont) {
         receive(
-            (bool b) { cont = false; },
-            (Variant f, Variant a) {
-                f.call(obj, a);
+            (Msg!T msg) {
+                if (msg.stop) {
+                    cont = false;
+                } else {
+                    msg.func(obj);
+                }
             }
         );
     }
@@ -55,7 +55,9 @@ void objThread(T, A...)(A args) if (isObject!T) {
 
 template isObject(T) { enum isObject = is(T : Object); }
 
-version (unittest)
+version (unittest) {
+    import std.stdio;
+
     class FiboCalculator {
         this(int arg) {
             std.stdio.writeln("creating fiboCalculator with ", arg);
@@ -66,10 +68,30 @@ version (unittest)
         }
     }
 
+    class Alt {
+        this(Tid tid) {
+            send(tid, thisTid);
+            auto str = receiveOnly!string();
+            writeln("received str standard way: ", str);
+        }
+        
+        void method(string str) {
+            writeln("other way: ", str);
+        }
+    }
+}
+
 unittest {
     auto fc = spawnAsynchronousObject!(FiboCalculator)(2);
     fc.hiWorld();
     stop(fc);
+    
+    /+ doesn't work
+    auto alt = spawnAsynchronousObject!(Alt)(thisTid);
+    auto altid = receiveOnly!Tid();
+    alt.method("standard");
+    send(altid, "asyncobj");
+    stop(alt);
+    +/
 }
 
-void main(){}
