@@ -1,6 +1,8 @@
 
 CC=dmd
-SRC_FILES = concurrency/queue.d containers/lookahead.d text/json.d ui/terminal.d
+SRC_FILES = containers/lookahead.d containers/palindrome.d \
+            text/json.d \
+            ui/terminal.d
 
 
 all: build
