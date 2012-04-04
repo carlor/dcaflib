@@ -10,6 +10,6 @@ all: build
 build:
 	$(CC) -c -odbin $(SRC_FILES)
 
-doc:
+docs:
 	$(CC) -D -Dddocs -o- $(SRC_FILES)
 

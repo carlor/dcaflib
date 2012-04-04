@@ -1,1 +1,10 @@
-dcaflib is a series of miscellenious libraries.
+dcaflib is a library with miscellaneous modules.
+
+To build:
+    $ make build
+Puts all object files into the bin folder.
+
+To generate the docs:
+    $ make docs
+Puts all html files into the doc folder.
+ 
