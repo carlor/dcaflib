@@ -19,14 +19,25 @@ AsynchronousObject!T spawnAsynchronousObject(T, A...)(A arguments)
 struct AsynchronousObject(T) if (isObject!T) {
     
     void opDispatch(string name, A...)(A args) {
-        auto msg = Msg!T(false, (T o) { mixin("o."~name~"(args);"); });
+        Msg!T msg;
+        msg.stop = false;
+        Tid me = thisTid;
+        msg.func = (T o) {
+            mixin("o."~name~"(args);");
+        };
         send(tid, msg);
     }
     
     private Tid tid;
+    private bool stopped;
+}
+
+bool stopped(T)(AsynchronousObject!T aso) {
+    return aso.stopped;
 }
 
 void stop(T)(AsynchronousObject!T aso) {
+    assert(!stopped(aso));
     send(aso.tid, Msg!T(true, (T o) {}));
 }
 
@@ -35,6 +46,10 @@ private:
 struct Msg(T) {
     bool stop;
     void delegate(T) func;
+}
+
+struct ReturnMsg(T) {
+    T r;
 }
 
 void objThread(T, A...)(A args) if (isObject!T) {
@@ -71,13 +86,26 @@ version (unittest) {
     class Alt {
         this(Tid tid) {
             send(tid, thisTid);
-            auto str = receiveOnly!string();
+            auto str = receiveNext!string();
             writeln("received str standard way: ", str);
         }
         
         void method(string str) {
             writeln("other way: ", str);
         }
+        
+        int newMethod() {
+            writeln("new methoding");
+            return 3;
+        }
+        
+        int prop;
+    }
+    
+    T receiveNext(T)() {
+        T r;
+        receive((T t) {r = t;});
+        return r;
     }
 }
 
@@ -86,12 +114,14 @@ unittest {
     fc.hiWorld();
     stop(fc);
     
-    /+ doesn't work
+    // /+ doesn't work
     auto alt = spawnAsynchronousObject!(Alt)(thisTid);
-    auto altid = receiveOnly!Tid();
-    alt.method("standard");
-    send(altid, "asyncobj");
+    auto altid = receiveNext!Tid();
+    alt.method("asyncobj");
+    send(altid, "standard");
+    alt.newMethod();
+    writeln(alt.prop);
     stop(alt);
-    +/
+    // +/
 }
 
